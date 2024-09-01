@@ -1,30 +1,31 @@
 <template>
-  <ul class="z-30 absolute text-xs bg-neutral-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-neutral-300 dark:border-gray-600 shadow rounded select-none" ref="contextmenu" v-if="context.active" :style="context.positions">
-    <li class="px-2 py-1.5 cursor-pointer hover:bg-neutral-200 dark:hover:bg-gray-700"
-        v-for="(item) in filteredItems" :key="item.title" @click="run(item)">
+  <ul ref="contextmenu" v-show="context.active" :style="context.positions"
+      class="vuefinder__context-menu">
+    <li class="vuefinder__context-menu__item" v-for="(item) in filteredItems" :key="item.title">
       <template v-if="item.link">
-        <a target="_blank" :href="item.link" :download="item.link">
-          <span class="px-1"></span>
+        <a class="vuefinder__context-menu__link" target="_blank" :href="item.link" :download="item.link"
+           @click="app.emitter.emit('vf-contextmenu-hide')">
           <span>{{ item.title() }}</span>
         </a>
       </template>
       <template v-else>
-        <span class="px-1"></span>
-        <span>{{ item.title() }}</span>
+        <div class="vuefinder__context-menu__action" @click="run(item)">
+          <span>{{ item.title() }}</span>
+        </div>
       </template>
     </li>
   </ul>
 </template>
 
-<script>
-export default {
-  name: 'VFContextMenu'
-};
-</script>
-
 <script setup>
 import {computed, inject, nextTick, reactive, ref} from 'vue';
-import {FEATURES} from "./features.js";
+import {FEATURES} from "../features.js";
+import ModalNewFolder from "./modals/ModalNewFolder.vue";
+import ModalPreview from "./modals/ModalPreview.vue";
+import ModalArchive from "./modals/ModalArchive.vue";
+import ModalUnarchive from "./modals/ModalUnarchive.vue";
+import ModalRename from "./modals/ModalRename.vue";
+import ModalDelete from "./modals/ModalDelete.vue";
 
 const app = inject('ServiceContainer');
 const {t} = app.i18n
@@ -54,77 +55,96 @@ const menuItems = {
   newfolder: {
     key: FEATURES.NEW_FOLDER,
     title: () => t('New Folder'),
+    action: () => app.modal.open(ModalNewFolder),
+  },
+  selectAll: {
+    title: () => t('Select All'),
+    action: () => app.dragSelect.selectAll(),
+  },
+  pinFolder: {
+    title: () => t('Pin Folder'),
     action: () => {
-      app.emitter.emit('vf-modal-show', {type:'new-folder'});
+        app.pinnedFolders = app.pinnedFolders.concat(selectedItems.value);
+        app.storage.setStore('pinned-folders', app.pinnedFolders);
+    },
+  },
+
+  unpinFolder: {
+    title: () => t('Unpin Folder'),
+    action: () => {
+        app.pinnedFolders = app.pinnedFolders.filter(fav => !selectedItems.value.find(item => item.path === fav.path));
+        app.storage.setStore('pinned-folders', app.pinnedFolders);
     },
   },
   delete: {
     key: FEATURES.DELETE,
     title: () => t('Delete'),
     action: () => {
-      app.emitter.emit('vf-modal-show', {type:'delete', items: selectedItems});
+      app.modal.open(ModalDelete, {items: selectedItems});
     },
   },
   refresh: {
-    title: () =>  t('Refresh'),
+    title: () => t('Refresh'),
     action: () => {
-      app.emitter.emit('vf-fetch',{params:{q: 'index', adapter: app.data.adapter, path: app.data.dirname}} );
+      app.emitter.emit('vf-fetch', {params: {q: 'index', adapter: app.fs.adapter, path: app.fs.data.dirname}});
     },
   },
   preview: {
     key: FEATURES.PREVIEW,
-    title: () =>  t('Preview'),
-    action: () => {
-      app.emitter.emit('vf-modal-show', {type:'preview', adapter:app.data.adapter, item: selectedItems.value[0]});
-    },
+    title: () => t('Preview'),
+    action: () => app.modal.open(ModalPreview, {adapter: app.fs.adapter, item: selectedItems.value[0]}),
   },
   open: {
-    title: () =>  t('Open'),
+    title: () => t('Open'),
     action: () => {
       app.emitter.emit('vf-search-exit');
-      app.emitter.emit('vf-fetch', {params:{q: 'index', adapter: app.data.adapter, path:selectedItems.value[0].path}});
+      app.emitter.emit('vf-fetch', {
+        params: {
+          q: 'index',
+          adapter: app.fs.adapter,
+          path: selectedItems.value[0].path
+        }
+      });
     },
   },
   openDir: {
-    title: () =>  t('Open containing folder'),
+    title: () => t('Open containing folder'),
     action: () => {
       app.emitter.emit('vf-search-exit');
-      app.emitter.emit('vf-fetch', {params:{q: 'index', adapter: app.data.adapter, path: (selectedItems.value[0].dir)}});
+      app.emitter.emit('vf-fetch', {
+        params: {
+          q: 'index',
+          adapter: app.fs.adapter,
+          path: (selectedItems.value[0].dir)
+        }
+      });
     },
   },
   download: {
     key: FEATURES.DOWNLOAD,
-    link: computed(() => app.requester.getDownloadUrl(app.data.adapter, selectedItems.value[0])),
-    title: () =>  t('Download'),
+    link: computed(() => app.requester.getDownloadUrl(app.fs.adapter, selectedItems.value[0])),
+    title: () => t('Download'),
     action: () => {
-      const url = app.requester.getDownloadUrl(app.data.adapter, selectedItems.value[0]);
-      app.emitter.emit('vf-download', url);
     },
   },
   archive: {
     key: FEATURES.ARCHIVE,
-    title: () =>  t('Archive'),
-    action: () => {
-      app.emitter.emit('vf-modal-show', {type:'archive', items: selectedItems});
-    },
+    title: () => t('Archive'),
+    action: () => app.modal.open(ModalArchive, {items: selectedItems}),
   },
   unarchive: {
     key: FEATURES.UNARCHIVE,
     title: () => t('Unarchive'),
-    action: () => {
-      app.emitter.emit('vf-modal-show', {type:'unarchive', items: selectedItems});
-    },
+    action: () => app.modal.open(ModalUnarchive, {items: selectedItems}),
   },
   rename: {
     key: FEATURES.RENAME,
-    title: () =>  t('Rename'),
-    action: () => {
-      app.emitter.emit('vf-modal-show', {type:'rename', items: selectedItems});
-    },
+    title: () => t('Rename'),
+    action: () => app.modal.open(ModalRename, {items: selectedItems}),
   }
 };
 
-const run = (item) =>{
+const run = (item) => {
   app.emitter.emit('vf-contextmenu-hide');
   item.action();
 };
@@ -134,7 +154,7 @@ app.emitter.on('vf-search-query', ({newQuery}) => {
   searchQuery.value = newQuery;
 });
 
-app.emitter.on('vf-contextmenu-show', ({event, area, items,  target = null}) => {
+app.emitter.on('vf-contextmenu-show', ({event, items, target = null}) => {
   context.items = [];
 
   if (searchQuery.value) {
@@ -147,6 +167,7 @@ app.emitter.on('vf-contextmenu-show', ({event, area, items,  target = null}) => 
     }
   } else if (!target && !searchQuery.value) {
     context.items.push(menuItems.refresh);
+    context.items.push(menuItems.selectAll);
     context.items.push(menuItems.newfolder);
     app.emitter.emit('vf-context-selected', []);
     // console.log('no files selected');
@@ -157,15 +178,20 @@ app.emitter.on('vf-contextmenu-show', ({event, area, items,  target = null}) => 
     app.emitter.emit('vf-context-selected', items);
     // console.log(items.length + ' selected (more than 1 item.)');
   } else {
-    if (target.type == 'dir') {
+    if (target.type === 'dir') {
       context.items.push(menuItems.open);
+      if (app.pinnedFolders.findIndex((item) => item.path === target.path) !== -1) {
+        context.items.push(menuItems.unpinFolder);
+      } else {
+        context.items.push(menuItems.pinFolder);
+      }
     } else {
       context.items.push(menuItems.preview);
       context.items.push(menuItems.download);
     }
     context.items.push(menuItems.rename);
 
-    if (target.mime_type == 'application/zip') {
+    if (target.mime_type === 'application/zip') {
       context.items.push(menuItems.unarchive);
     } else {
       context.items.push(menuItems.archive);
@@ -174,25 +200,31 @@ app.emitter.on('vf-contextmenu-show', ({event, area, items,  target = null}) => 
     app.emitter.emit('vf-context-selected', [target]);
     // console.log(target.type + ' is selected');
   }
-  showContextMenu(event, area)
+  showContextMenu(event)
 })
 
 app.emitter.on('vf-contextmenu-hide', () => {
   context.active = false;
 })
 
-const showContextMenu = (event, area) => {
+const showContextMenu = (event) => {
+  const area = app.dragSelect.area.value
+  const rootContainer = app.root.getBoundingClientRect();
+  const areaContainer = area.getBoundingClientRect();
+
+  let left = event.clientX - rootContainer.left;
+  let top = event.clientY - rootContainer.top;
+
   context.active = true;
-
+  // wait for the next tick to get the actual size of the context menu
   nextTick(() => {
-    const rootBbox = app.root.getBoundingClientRect();
-    const areaContainer = area.getBoundingClientRect();
+    // get the actual size of the context menu
+    const menuContainer = contextmenu.value?.getBoundingClientRect();
 
-    let left = event.pageX - rootBbox.left;
-    let top = event.pageY - rootBbox.top;
-    let menuHeight = contextmenu.value.offsetHeight;
-    let menuWidth = contextmenu.value.offsetWidth;
+    let menuHeight = menuContainer?.height ?? 0;
+    let menuWidth = menuContainer?.width ?? 0;
 
+    // check if the context menu is out of the container area
     left = (areaContainer.right - event.pageX + window.scrollX) < menuWidth ? left - menuWidth : left;
     top = (areaContainer.bottom - event.pageY + window.scrollY) < menuHeight ? top - menuHeight : top;
 

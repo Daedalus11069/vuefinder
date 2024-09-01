@@ -98,6 +98,11 @@ app.use(VueFinder, {
 </script>
 ```
 
+### Styling
+Vuefinder uses the BEM (Block Element Modifier) convention for its CSS classes, with default styles applied using TailwindCSS. This structured approach helps maintain a clear and consistent naming convention for CSS classes, making it easier to understand and manage styles across the project.
+
+To customize or update the styles, simply find the appropriate BEM class in the component’s style section and override the styles as needed.
+
 ### Props
 
 | Prop          |     Value     | Default  | Description                                                |
@@ -132,7 +137,7 @@ when you set the select-button active to true, the select button will be visible
   :select-button="handleSelectButton"
 />
 
-<script>
+<script setup>
   // other codes
 
   const handleSelectButton = {
@@ -161,7 +166,7 @@ Alternatively, you can use the select event to get the selected items.
   @select="handleSelect"
 />
 
-<script>
+<script setup>
   // other codes
   
   // we can define a ref object to store the selected items
@@ -212,6 +217,7 @@ Alternatively, you can use the select event to get the selected items.
 
 ### Backend
 - PHP: [VueFinder Php Library](https://github.com/n1crack/vuefinder-php)
+- Python: [Python WSGI](https://github.com/abichinger/vuefinder-wsgi)
 
 You can use any backend language. Just be sure, the response should be compatible.
 If you develop a backend library for another language, please let me know to add it here.
@@ -225,8 +231,8 @@ If you want to contribute to the project, please feel free to fork the repositor
  - [DragSelect](https://github.com/ThibaultJanBeyer/DragSelect/) : Selection utility
  - [Uppy](https://github.com/transloadit/uppy) : Upload library
  - [vanilla-lazyload](https://github.com/verlok/vanilla-lazyload) : lightweight and flexible lazy loading for thumbnails
- - [microtip](https://github.com/ghosh/microtip) : Minimal, accessible, ultra lightweight css tooltip library
  - [mitt](https://github.com/developit/mitt) : Tiny 200 byte functional event emitter / pubsub
+ - [OverlayScrollbars](https://kingsora.github.io/OverlayScrollbars) : scrollbar plugin
 
 ### License
 Copyright (c) 2018 Yusuf ÖZDEMİR, released under [the MIT license](LICENSE)
