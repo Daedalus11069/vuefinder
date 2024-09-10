@@ -1,105 +1,111 @@
-import {computed, onMounted, reactive, ref, watch} from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 
 export default function (initialAdapter, initialPath) {
+  const adapter = ref(initialAdapter);
+  const path = ref(initialPath);
+  const breadcrumbs = ref([]);
+  const breadcrumbItems = ref([]);
+  const hiddenBreadcrumbs = ref([]);
+  const showHiddenBreadcrumbs = ref(false);
+  const breadcrumbItemLimit = ref(5);
 
-    const adapter = ref(initialAdapter);
-    const path = ref(initialPath);
-    const breadcrumbs = ref([]);
-    const breadcrumbItems = ref([]);
-    const hiddenBreadcrumbs = ref([]);
-    const showHiddenBreadcrumbs = ref(false);
-    const breadcrumbItemLimit = ref(5);
+  let loading = false; // loading state
 
-    let loading = false; // loading state
+  let searchMode = false;
 
-    let searchMode = false;
+  // fetched items
+  const data = reactive({
+    adapter: adapter,
+    storages: [],
+    dirname: path,
+    files: []
+  });
 
-    // fetched items
-    const data = reactive({
-        adapter: adapter,
-        storages: [],
-        dirname: path,
-        files: []
-    });
+  // breadcrumbs for the current path
+  function updateBreadcrumbs() {
+    let items = [],
+      links = [];
 
-    // breadcrumbs for the current path
-    function updateBreadcrumbs() {
-        let items = [], links = [];
+    let dirname = path.value ?? adapter.value + "://";
 
-        let dirname = path.value ?? (adapter.value + '://');
+    if (dirname.length === 0) {
+      breadcrumbs.value = [];
+    }
 
-        if (dirname.length === 0) {
-            breadcrumbs.value = [];
+    dirname
+      .replace(adapter.value + "://", "")
+      .split("/")
+      .forEach(function (item) {
+        items.push(item);
+        if (items.join("/") !== "") {
+          links.push({
+            basename: item,
+            name: item,
+            path: adapter.value + "://" + items.join("/"),
+            type: "dir"
+          });
         }
+      });
 
-        dirname
-            .replace(adapter.value + '://', '')
-            .split('/')
-            .forEach(function (item) {
-                items.push(item);
-                if (items.join('/') !== '') {
-                    links.push({
-                        'basename': item,
-                        'name': item,
-                        'path': adapter.value + '://' + items.join('/'),
-                        'type': 'dir'
-                    });
-                }
-            });
+    breadcrumbItems.value = links;
 
-        breadcrumbItems.value = links;
+    const [linksToDisplay, hiddenLinks] = separateBreadcrumbs(
+      links,
+      breadcrumbItemLimit.value
+    );
 
-        const [linksToDisplay, hiddenLinks ] = separateBreadcrumbs(links, breadcrumbItemLimit.value);
+    hiddenBreadcrumbs.value = hiddenLinks;
+    breadcrumbs.value = linksToDisplay;
+  }
 
-        hiddenBreadcrumbs.value = hiddenLinks;
-        breadcrumbs.value = linksToDisplay;
+  function limitBreadcrumbItems(count) {
+    breadcrumbItemLimit.value = count;
+    updateBreadcrumbs();
+  }
+
+  function separateBreadcrumbs(links, show) {
+    if (links.length > show) {
+      return [links.slice(-show), links.slice(0, -show)];
     }
 
-    function limitBreadcrumbItems(count){
-        breadcrumbItemLimit.value = count;
-        updateBreadcrumbs();
-    }
+    return [links, []];
+  }
 
-    function separateBreadcrumbs(links, show) {
-        if (links.length > show) {
-            return [links.slice(-show), links.slice(0, -show)];
-        }
+  function toggleHiddenBreadcrumbs(value = null) {
+    showHiddenBreadcrumbs.value = value ?? !showHiddenBreadcrumbs.value;
+  }
 
-        return [links, []]
-    }
+  function isGoUpAvailable() {
+    return breadcrumbs.value && breadcrumbs.value.length && !searchMode;
+  }
 
-    function toggleHiddenBreadcrumbs(value = null) {
-        showHiddenBreadcrumbs.value = value ?? !showHiddenBreadcrumbs.value;
-    }
+  const parentFolderPath = computed(() => {
+    return (
+      breadcrumbs.value[breadcrumbs.value.length - 2]?.path ??
+      adapter.value + "://"
+    );
+  });
 
-    function isGoUpAvailable() {
-        return breadcrumbs.value && breadcrumbs.value.length && !searchMode;
-    };
+  onMounted(() => {
+    // load data
+  });
 
-    const parentFolderPath =  computed(()  => {
-        return breadcrumbs.value[breadcrumbs.value.length - 2]?.path ?? (adapter.value + '://');
-    });
+  watch(path, updateBreadcrumbs);
+  onMounted(updateBreadcrumbs);
 
-    onMounted(() => {
-        // load data
-    });
-
-    watch(path, updateBreadcrumbs)
-    onMounted(updateBreadcrumbs)
-
-    return {
-        adapter,
-        path,
-        loading,
-        searchMode,
-        data,
-        breadcrumbs,
-        breadcrumbItems,
-        limitBreadcrumbItems,
-        hiddenBreadcrumbs,
-        showHiddenBreadcrumbs,
-        toggleHiddenBreadcrumbs,
-        isGoUpAvailable,
-        parentFolderPath
-    }
+  return {
+    adapter,
+    path,
+    loading,
+    searchMode,
+    data,
+    breadcrumbs,
+    breadcrumbItems,
+    limitBreadcrumbItems,
+    hiddenBreadcrumbs,
+    showHiddenBreadcrumbs,
+    toggleHiddenBreadcrumbs,
+    isGoUpAvailable,
+    parentFolderPath
+  };
 }

@@ -1,15 +1,30 @@
 <template>
   <div class="vuefinder__pdf-preview">
-    <h3 class="vuefinder__pdf-preview__title" id="modal-title" :title="app.modal.data.item.path">
+    <h3
+      class="vuefinder__pdf-preview__title"
+      id="modal-title"
+      :title="app.modal.data.item.path"
+    >
       {{ app.modal.data.item.basename }}
     </h3>
     <div>
-      <object class="vuefinder__pdf-preview__object" :data="getPDFUrl()" type="application/pdf" width="100%" height="100%">
-        <iframe class="vuefinder__pdf-preview__iframe" :src="getPDFUrl()" width="100%" height="100%">
-          <p>
-            Your browser does not support PDFs.
-            <a href="https://example.com/test.pdf">Download the PDF</a>.
-          </p>
+      <object
+        class="vuefinder__pdf-preview__object"
+        :data="getPDFUrl()"
+        type="application/pdf"
+        width="100%"
+        height="100%"
+      >
+        <iframe
+          class="vuefinder__pdf-preview__iframe"
+          :src="getPDFUrl()"
+          width="100%"
+          height="100%"
+          :srcdoc="`<p>
+          Your browser does not support PDFs.
+          <a href=&quot;${getPDFUrl()}&quot;>Download the PDF</a>.
+        </p>`"
+        >
         </iframe>
       </object>
     </div>
@@ -17,20 +32,20 @@
 </template>
 
 <script setup>
+import { inject, onMounted } from "vue";
 
-import {inject,onMounted} from 'vue';
+const app = inject("ServiceContainer");
 
-const app = inject('ServiceContainer');
-
-const emit = defineEmits(['success']);
+const emit = defineEmits(["success"]);
 
 const getPDFUrl = () => {
-  return app.requester.getPreviewUrl(app.modal.data.adapter, app.modal.data.item)
-}
+  return app.requester.getPreviewUrl(
+    app.modal.data.adapter,
+    app.modal.data.item
+  );
+};
 
 onMounted(() => {
-  emit('success');
+  emit("success");
 });
-
-
 </script>

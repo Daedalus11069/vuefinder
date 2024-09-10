@@ -1,14 +1,13 @@
 <template>
   <div>
-    <AscSVG v-if="direction==='asc'" />
-    <DescSVG v-if="direction==='desc'" />
+    <AscSVG v-if="direction === 'asc'" />
+    <DescSVG v-if="direction === 'desc'" />
   </div>
 </template>
 
 <script setup>
-import {defineProps} from 'vue';
-import AscSVG from './icons/asc.svg';
-import DescSVG from './icons/desc.svg';
+import AscSVG from "./icons/asc.svg";
+import DescSVG from "./icons/desc.svg";
 
-defineProps({direction: String});
+defineProps({ direction: String });
 </script>

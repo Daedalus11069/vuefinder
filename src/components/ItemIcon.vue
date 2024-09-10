@@ -1,14 +1,23 @@
 <template>
   <span class="vuefinder__item-icon">
-    <FolderSVG v-if="type === 'dir'" :class="small ? 'vuefinder__item-icon--small' : 'vuefinder__item-icon--large'" />
-    <FileSVG v-else :class="small ? 'vuefinder__item-icon--small' : 'vuefinder__item-icon--large'" />
+    <FolderSVG
+      v-if="type === 'dir'"
+      :class="
+        small ? 'vuefinder__item-icon--small' : 'vuefinder__item-icon--large'
+      "
+    />
+    <FileSVG
+      v-else
+      :class="
+        small ? 'vuefinder__item-icon--small' : 'vuefinder__item-icon--large'
+      "
+    />
   </span>
 </template>
 
 <script setup>
-import {defineProps} from "vue";
-import FileSVG from './icons/file.svg';
-import FolderSVG from './icons/folder.svg';
+import FileSVG from "./icons/file.svg";
+import FolderSVG from "./icons/folder.svg";
 
 defineProps({
   type: {
@@ -20,6 +29,5 @@ defineProps({
     type: Boolean,
     default: false
   }
-})
-
+});
 </script>

@@ -1,26 +1,34 @@
 <template>
   <div class="wrapper">
-    <div style="font-weight: bold;padding: 10px">Inline select button example</div>
+    <div style="font-weight: bold; padding: 10px">
+      Inline select button example
+    </div>
     <vue-finder
-      id='my_vuefinder'
+      id="my_vuefinder"
       :request="request"
       :max-file-size="maxFileSize"
       :features="features"
       :select-button="handleSelectButton"
+      :additional-buttons="additionalButtons"
+      v-model:view="viewMode"
+      v-model:sort="sortMode"
     />
 
-    <br>
-    <br>
-    <div style="font-weight: bold;padding: 10px">External select example</div>
+    <br />
+    <br />
+    <div style="font-weight: bold; padding: 10px">External select example</div>
     <vue-finder
-      id='my_vuefinder2'
+      id="my_vuefinder2"
+      theme="light"
       :request="request"
       :max-file-size="maxFileSize"
       :features="features"
       @select="handleSelect"
     />
 
-    <button class="btn" @click="handleButton" :disabled="!selectedFiles.length">Show Selected  ({{ selectedFiles.length ?? 0 }} selected)</button>
+    <button class="btn" @click="handleButton" :disabled="!selectedFiles.length">
+      Show Selected ({{ selectedFiles.length ?? 0 }} selected)
+    </button>
 
     <div v-show="selectedFiles.length">
       <h3>Selected Files ({{ selectedFiles.length }} selected)</h3>
@@ -30,59 +38,72 @@
         </li>
       </ul>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { FEATURES, FEATURE_ALL_NAMES } from '../src/features.js';
+import { ref } from "vue";
+import { FEATURE_ALL_NAMES } from "../src/features.js";
 
 /** @type {import('../src/utils/ajax.js').RequestConfig} */
+
+const viewMode = ref("list");
+const sortMode = ref({ active: true, column: "basename", order: "asc" });
+const additionalButtons = ref([
+  {
+    label: "Select 2",
+    isActive() {
+      return true;
+    },
+    click(selected, evt) {
+      console.log(selected, evt);
+    }
+  }
+]);
 
 const request = {
   // ----- CHANGE ME! -----
   // [REQUIRED] Url for development server endpoint
-  baseUrl: "http://vuefinder.ozdemir.be.test/vuefinder",
+  baseUrl: import.meta.env.VITE_VF_BASE_URL,
   // ----- CHANGE ME! -----
 
   // Additional headers & params & body
-  headers: { "X-ADDITIONAL-HEADER": 'yes' },
-  params: { additionalParam1: 'yes' },
-  body: { additionalBody1: ['yes'] },
+  headers: { "X-ADDITIONAL-HEADER": "yes" },
+  params: { additionalParam1: "yes" },
+  body: { additionalBody1: ["yes"] },
 
   // And/or transform request callback
   transformRequest: req => {
-    if (req.method === 'get') {
-      req.params.vf = "1"
+    if (req.method === "get") {
+      req.params.vf = "1";
     }
     return req;
   },
 
   // XSRF Token header name
-  xsrfHeaderName: "CSRF-TOKEN",
-}
-const maxFileSize = ref("500MB")
+  xsrfHeaderName: "CSRF-TOKEN"
+};
+const maxFileSize = ref("500MB");
 
 const features = [
-  ...FEATURE_ALL_NAMES,
+  ...FEATURE_ALL_NAMES
   // Or remove the line above, specify the features want to include
   // Like...
   //FEATURES.LANGUAGE,
-]
+];
 
 const selectedFiles = ref([]);
 
 // an example how to show selected files, outside of vuefinder
 // you can create a ref object and assign the items to it,
 // then with a button click, you can get the selected items easily
-const handleSelect = (selection) => {
-  selectedFiles.value = selection
-}
+const handleSelect = selection => {
+  selectedFiles.value = selection;
+};
 
 const handleButton = () => {
-  console.log(selectedFiles.value)
-}
+  console.log(selectedFiles.value);
+};
 
 const handleSelectButton = {
   // show select button
@@ -92,14 +113,13 @@ const handleSelectButton = {
   // handle click event
   click: (items, event) => {
     if (!items.length) {
-      alert('No item selected');
+      alert("No item selected");
       return;
     }
-    alert('Selected: ' + items[0].path);
+    alert("Selected: " + items[0].path);
     console.log(items, event);
   }
-}
-
+};
 </script>
 
 <style>
@@ -111,7 +131,7 @@ body {
   max-width: 800px;
   margin: 80px auto;
 }
-.btn{
+.btn {
   display: block;
   margin: 20px auto;
   padding: 10px 20px;

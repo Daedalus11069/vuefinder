@@ -1,4 +1,3 @@
-
 .vuefinder__delete-modal__content {
   @apply mt-3 text-center sm:mt-0 sm:text-left w-full;
 }
@@ -24,7 +23,7 @@
   @apply h-5 w-5 text-neutral-500;
 }
 
-.vuefinder .vuefinder__delete-modal__icon--dir {
+.vuefinder__delete-modal__icon--dir {
   @apply fill-sky-500 stroke-sky-500 dark:fill-slate-500 dark:stroke-slate-500;
 }
 

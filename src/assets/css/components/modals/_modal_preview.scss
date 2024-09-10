@@ -1,4 +1,3 @@
-
 .vuefinder__preview-modal__content {
   @apply mt-3 sm:mt-0 sm:text-left w-full;
 }
@@ -11,7 +10,7 @@
   @apply flex leading-5;
 }
 
-.vuefinder .vuefinder__preview-modal__spinner {
+.vuefinder__preview-modal__spinner {
   @apply animate-spin -ml-1 mr-3 h-5 w-5 text-white;
 }
 

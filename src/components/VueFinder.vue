@@ -114,11 +114,20 @@ const props = defineProps({
         ...rawProps
       };
     }
+  },
+  additionalButtons: {
+    type: Array,
+    default() {
+      return [];
+    }
   }
 });
 
+const view = defineModel("view", { default: "grid" });
+const sort = defineModel("sort");
+
 // the object is passed to all components as props
-const app = ServiceContainer(props, inject("VueFinderOptions"));
+const app = ServiceContainer(props, { view, sort }, inject("VueFinderOptions"));
 provide("ServiceContainer", app);
 const { setStore } = app.storage;
 

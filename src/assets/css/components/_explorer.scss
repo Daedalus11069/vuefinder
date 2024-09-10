@@ -1,4 +1,3 @@
-
 .vuefinder__explorer__container {
   @apply relative flex-auto flex flex-col;
 }
@@ -68,11 +67,11 @@
   @apply relative;
 }
 
-.vuefinder .vuefinder__explorer__item-thumbnail {
+.vuefinder__explorer__item-thumbnail {
   @apply h-10 md:h-12 m-auto;
 }
 
-.vuefinder .vuefinder__explorer__item-extension {
+.vuefinder__explorer__item-extension {
   @apply absolute hidden md:block top-1/2 w-full text-center text-neutral-500;
 }
 
@@ -89,9 +88,8 @@
 }
 
 .vf-item-grid {
-  @apply border border-transparent hover:bg-neutral-50 m-1 dark:hover:bg-gray-700 inline-flex w-[5.5rem] h-20 md:w-24 text-center justify-center select-none
+  @apply border border-transparent hover:bg-neutral-50 m-1 dark:hover:bg-gray-700 inline-flex w-[5.5rem] h-20 md:w-24 text-center justify-center select-none;
 }
-
 
 .vf-explorer-scrollbar-container {
   top: 33px;
