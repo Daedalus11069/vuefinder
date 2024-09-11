@@ -141,7 +141,7 @@ const ds = app.dragSelect;
 useHotkeyActions(app);
 
 const updateItems = data => {
-  Object.assign(app.fs.data, data);
+  app.fs.updateData(data);
   ds.clearSelection();
   ds.refreshSelection();
 };
@@ -227,8 +227,8 @@ onMounted(() => {
   });
 
   // Emit select event
-  ds.onSelect(items => {
-    emit("select", items);
+  ds.onSelect((items, callback) => {
+    emit("select", items, callback);
   });
 });
 </script>

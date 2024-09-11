@@ -18,8 +18,20 @@ export default function (initialAdapter, initialPath) {
     adapter: adapter,
     storages: [],
     dirname: path,
-    files: []
+    files: [],
+    cache: {}
   });
+
+  function updateData(newData) {
+    newData.files = newData.files.map(file => {
+      const filePath = file.path;
+      if (typeof data.cache[filePath] !== "undefined") {
+        return data.cache[filePath];
+      }
+      return file;
+    });
+    Object.assign(data, newData);
+  }
 
   // breadcrumbs for the current path
   function updateBreadcrumbs() {
@@ -99,6 +111,7 @@ export default function (initialAdapter, initialPath) {
     loading,
     searchMode,
     data,
+    updateData,
     breadcrumbs,
     breadcrumbItems,
     limitBreadcrumbItems,

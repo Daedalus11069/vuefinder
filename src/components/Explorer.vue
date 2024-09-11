@@ -82,6 +82,7 @@
         :index="index"
         :dragImage="dragImage"
         class="vf-item vf-item-list"
+        @update:item="handleItemUpdate(item, $event)"
       >
         <div class="vuefinder__explorer__item-list-content">
           <div class="vuefinder__explorer__item-list-name">
@@ -103,6 +104,7 @@
         class="vf-item vf-item-list"
         draggable="true"
         :key="item.path"
+        @update:item="handleItemUpdate(item, $event)"
       >
         <div class="vuefinder__explorer__item-list-content">
           <div class="vuefinder__explorer__item-list-name">
@@ -149,6 +151,7 @@
         :dragImage="dragImage"
         class="vf-item vf-item-grid"
         draggable="true"
+        @update:item="handleItemUpdate(item, $event)"
       >
         <div>
           <div class="vuefinder__explorer__item-grid-content">
@@ -178,9 +181,9 @@
             </div>
           </div>
 
-          <span class="vuefinder__explorer__item-title break-all">{{
-            title_shorten(item.basename)
-          }}</span>
+          <span class="vuefinder__explorer__item-title break-all">
+            {{ title_shorten(item.basename) }}
+          </span>
         </div>
       </Item>
     </div>
@@ -196,9 +199,9 @@ import {
   onBeforeUnmount,
   onMounted,
   onUpdated,
-  reactive,
   ref
 } from "vue";
+import { useDebounceFn } from "@vueuse/core";
 import secondsToTime from "format-duration";
 import datetimestring from "../utils/datetimestring.js";
 import title_shorten from "../utils/title_shorten.js";
@@ -309,6 +312,14 @@ const itemTitle = item => {
   }
   return title;
 };
+
+const handleItemUpdate = useDebounceFn((item, newItem) => {
+  const itemInCache = app.fs.data.cache[item.path];
+  Object.assign(item, newItem);
+  if (typeof itemInCache === "undefined") {
+    app.fs.data.cache[item.path] = item;
+  }
+}, 1000);
 
 onMounted(() => {
   vfLazyLoad = new LazyLoad(ds.area.value);

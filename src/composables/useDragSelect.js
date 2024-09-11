@@ -104,7 +104,24 @@ export default function () {
 
     dragSelectInstance.subscribe("DS:end", ({ items, event, isDragging }) => {
       selectedItems.value = items.map(el => JSON.parse(el.dataset.item));
-      callback(items.map(el => JSON.parse(el.dataset.item)));
+      callback(
+        items.map(el => JSON.parse(el.dataset.item)),
+        cbItems => {
+          if (typeof cbItems !== "undefined") {
+            items.forEach(el => {
+              const item = JSON.parse(el.dataset.item);
+              const cbItem = cbItems.find(itm => itm.path === item.path);
+              if (typeof cbItem !== "undefined") {
+                Object.keys(item).forEach(key => {
+                  item[key] = cbItem[key];
+                });
+                el.dataset.item = JSON.stringify(item);
+              }
+            });
+            selectedItems.value = items.map(el => JSON.parse(el.dataset.item));
+          }
+        }
+      );
     });
   };
 

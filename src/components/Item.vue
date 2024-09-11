@@ -22,6 +22,7 @@
         target: item
       })
     "
+    ref="itemRef"
   >
     <slot />
     <PinSVG
@@ -32,19 +33,35 @@
 </template>
 
 <script setup>
-import { inject } from "vue";
+import { inject, ref } from "vue";
 import ModalPreview from "./modals/ModalPreview.vue";
 import ModalMove from "./modals/ModalMove.vue";
 import PinSVG from "./icons/pin.svg";
+import { useMutationObserver } from "@vueuse/core";
 
 const app = inject("ServiceContainer");
 const ds = app.dragSelect;
 
 const props = defineProps({
-  item: { type: Object },
   index: { type: Number },
   dragImage: { type: Object }
 });
+
+const item = defineModel("item", { type: Object });
+
+const itemRef = ref();
+
+useMutationObserver(
+  itemRef,
+  ([mutation]) => {
+    if (mutation.attributeName === "data-item") {
+      item.value = JSON.parse(itemRef.value.dataset.item);
+    }
+  },
+  {
+    attributes: true
+  }
+);
 
 const openItem = item => {
   if (item.type === "dir") {
@@ -136,7 +153,7 @@ const delayedOpenItem = $event => {
     doubleTapTimeOut = setTimeout(() => (tappedTwice = false), 300);
   } else {
     tappedTwice = false;
-    openItem(props.item);
+    openItem(item.value);
     clearTimeout(touchTimeOut);
     return false;
   }
