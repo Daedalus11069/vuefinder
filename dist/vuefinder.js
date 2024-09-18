@@ -1640,7 +1640,7 @@ function Nl(t, e) {
   }
   function p() {
     let k = [], S = [], O = o.value ?? n.value + "://";
-    O.length === 0 && (s.value = []), O.replace(n.value + "://", "").split("/").forEach(function(V) {
+    O.length === 0 && (s.value = []), O.replace(n.value + "://", "").split(/\/|\\/).forEach(function(V) {
       k.push(V), k.join("/") !== "" && S.push({
         basename: V,
         name: V,
@@ -1794,12 +1794,12 @@ function Hs(t, e, ...[n]) {
     i.forEach((m) => m.stop());
   };
 }
-function Kl(t) {
+const Kl = Pl ? window : void 0;
+function Yl(t) {
   var e;
   const n = cn(t);
   return (e = n == null ? void 0 : n.$el) != null ? e : n;
 }
-const Yl = Pl ? window : void 0;
 function Jl() {
   const t = M(!1), e = _r();
   return e && xe(() => {
@@ -1811,12 +1811,12 @@ function Xl(t) {
   return Fe(() => (e.value, !!t()));
 }
 function Zl(t, e, n = {}) {
-  const { window: o = Yl, ...s } = n;
+  const { window: o = Kl, ...s } = n;
   let c;
   const a = Xl(() => o && "MutationObserver" in o), d = () => {
     c && (c.disconnect(), c = void 0);
   }, i = Fe(() => {
-    const m = cn(t), p = (Array.isArray(m) ? m : [m]).map(Kl).filter(zl);
+    const m = cn(t), p = (Array.isArray(m) ? m : [m]).map(Yl).filter(zl);
     return new Set(p);
   }), u = Me(
     () => i.value,

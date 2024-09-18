@@ -46,7 +46,7 @@ export default function (initialAdapter, initialPath) {
 
     dirname
       .replace(adapter.value + "://", "")
-      .split("/")
+      .split(/\/|\\/)
       .forEach(function (item) {
         items.push(item);
         if (items.join("/") !== "") {
