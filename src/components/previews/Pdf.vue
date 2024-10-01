@@ -20,11 +20,8 @@
           :src="getPDFUrl()"
           width="100%"
           height="100%"
-          :srcdoc="`<p>
-          Your browser does not support PDFs.
-          <a href=&quot;${getPDFUrl()}&quot;>Download the PDF</a>.
-        </p>`"
         >
+          Your browser does not support PDFs
         </iframe>
       </object>
     </div>

@@ -105,7 +105,7 @@
           searchQuery
         }}</span>
       </div>
-      <LoadingSVG v-if="app.fs.loading" />
+      <LoadingSVG v-if="app.loadingIndicator === 'circular' && app.fs.loading" />
     </div>
 
     <div class="vuefinder__toolbar__controls">
