@@ -31,7 +31,7 @@
 </template>
 
 <script setup>
-import { inject, onMounted, provide, ref } from "vue";
+import { inject, onMounted, provide, ref, watch } from "vue";
 import ServiceContainer from "../ServiceContainer.js";
 import { useHotkeyActions } from "../composables/useHotkeyActions.js";
 
@@ -42,7 +42,7 @@ import ContextMenu from "../components/ContextMenu.vue";
 import Statusbar from "../components/Statusbar.vue";
 import TreeView from "../components/TreeView.vue";
 
-const emit = defineEmits(["select"]);
+const emit = defineEmits(["select", "update:path"]);
 
 const props = defineProps({
   id: {
@@ -114,6 +114,14 @@ const props = defineProps({
         ...rawProps
       };
     }
+  },
+  onError: {
+    type: Function,
+    default: null
+  },
+  loadingIndicator: {
+    type: String,
+    default: "circular"
   },
   additionalButtons: {
     type: Array,
@@ -187,9 +195,6 @@ app.emitter.on(
           setStore("path", app.fs.path);
         }
 
-        if (["index", "search"].includes(params.q)) {
-          app.fs.loading = false;
-        }
         if (!noCloseModal) {
           app.modal.close();
         }
@@ -203,9 +208,44 @@ app.emitter.on(
         if (onError) {
           onError(e);
         }
+      })
+      .finally(() => {
+        if (["index", "search"].includes(params.q)) {
+          app.fs.loading = false;
+        }
       });
   }
 );
+
+/**
+ * fetchPath fetches the items of the given path
+ * if no path is given, the backend should return the root of the current adapter
+ * @param path {string | undefined} example: 'media://public'
+ */
+function fetchPath(path) {
+  let pathExists = {};
+
+  if (path && path.includes("://")) {
+    pathExists = {
+      adapter: path.split("://")[0],
+      path: path
+    };
+  }
+
+  app.emitter.emit("vf-fetch", {
+    params: { q: "index", adapter: app.fs.adapter, ...pathExists },
+    onError:
+      props.onError ??
+      (e => {
+        if (e.message) {
+          app.emitter.emit("vf-toast-push", {
+            label: e.message,
+            type: "error"
+          });
+        }
+      })
+  });
+}
 
 // fetch initial data
 onMounted(() => {
@@ -213,22 +253,27 @@ onMounted(() => {
   // later we can set default adapter from a prop value
 
   // if there is a path coming from the prop, we should use it.
-  let pathExists = {};
+  fetchPath(app.fs.path);
 
-  if (app.fs.path.includes("://")) {
-    pathExists = {
-      adapter: app.fs.path.split("://")[0],
-      path: app.fs.path
-    };
-  }
-
-  app.emitter.emit("vf-fetch", {
-    params: { q: "index", adapter: app.fs.adapter, ...pathExists }
-  });
+  // We re-fetch the data if the path prop is updated
+  watch(
+    () => props.path,
+    path => {
+      fetchPath(path);
+    }
+  );
 
   // Emit select event
   ds.onSelect((items, callback) => {
     emit("select", items, callback);
   });
+
+  // Emit update:path event
+  watch(
+    () => app.fs.data.dirname,
+    path => {
+      emit("update:path", path);
+    }
+  );
 });
 </script>

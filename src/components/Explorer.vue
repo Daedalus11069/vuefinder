@@ -66,7 +66,7 @@
 
     <div
       :ref="ds.area"
-      class="vuefinder__explorer__selector-area vf-explorer-scrollbar vf-selector-area"
+      class="vuefinder__explorer__selector-area vf-explorer-scrollbar vf-selector-area min-h-32"
       @contextmenu.self.prevent="
         app.emitter.emit('vf-contextmenu-show', {
           event: $event,
@@ -74,6 +74,11 @@
         })
       "
     >
+      <div
+        class="vuefinder__linear-loader absolute"
+        v-if="app.loadingIndicator === 'linear' && app.fs.loading"
+      ></div>
+
       <!-- Search View -->
       <Item
         v-if="searchQuery.length"

@@ -22,7 +22,6 @@ export default (props, models, options) => {
   const theme = useTheme(storage, props.theme);
   const supportedLocales = options.i18n;
   const initialLang = props.locale ?? options.locale;
-  const adapter = storage.getStore("adapter");
 
   const setFeatures = features => {
     if (Array.isArray(features)) {
@@ -34,6 +33,9 @@ export default (props, models, options) => {
   const persist = storage.getStore("persist-path", props.persist);
 
   const path = persist ? storage.getStore("path", props.path) : props.path;
+  const adapter = persist ? storage.getStore("adapter") : null;
+
+  const dragSelect = useDragSelect();
 
   const returnVal = reactive({
     /**
@@ -55,13 +57,13 @@ export default (props, models, options) => {
     // modal state
     modal: useModal(),
     // dragSelect object, it is responsible for selecting items
-    dragSelect: computed(() => useDragSelect()),
+    dragSelect: computed(() => dragSelect),
     // http object
     requester: buildRequester(props.request),
     // active features
     features: setFeatures(props.features),
     // view state
-    view: storage.getStore("viewport", models.view.value),
+    view: storage.getStore("viewport", "grid"),
     // fullscreen state
     fullScreen: storage.getStore("full-screen", props.fullScreen),
     // show tree view
@@ -91,6 +93,8 @@ export default (props, models, options) => {
     persist: persist,
     // show thumbnails
     showThumbnails: storage.getStore("show-thumbnails", props.showThumbnails),
+    // type of progress indicator
+    loadingIndicator: props.loadingIndicator,
     // file system
     fs: useData(adapter, path),
     // Sorting
