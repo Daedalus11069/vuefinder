@@ -758,6 +758,7 @@ body>.os-scrollbar {
 .vuefinder [type=button],
 .vuefinder [type=reset],
 .vuefinder [type=submit] {
+  appearance: button;
   -webkit-appearance: button;
   background-color: transparent;
   background-image: none
@@ -781,6 +782,7 @@ body>.os-scrollbar {
 }
 
 .vuefinder [type=search] {
+  appearance: textfield;
   -webkit-appearance: textfield;
   outline-offset: -2px
 }
